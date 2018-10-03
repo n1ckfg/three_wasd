@@ -27,6 +27,48 @@ var armFrameForward = false;
 var armFrameBack = false;
 var armTogglePause = false;
 
+function init() {
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+    window.addEventListener('resize', onWindowResize, false);
+
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+
+    scene = new THREE.Scene();
+
+    controls = new THREE.DeviceOrientationControls(camera);
+
+    clock = new THREE.Clock;
+
+    setupPlayer();
+}
+
+function onMouseDown() {
+    //
+}
+
+function onMouseMove() {
+    //
+}
+
+function onMouseUp() {
+    //
+}
+
+function onTouchStart() {
+    //
+}
+
+function onTouchMove() {
+    //
+}
+
+function onTouchEnd() {
+    //
+}
+
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
@@ -43,6 +85,13 @@ function setupControls() {
         isWalkingForward = false;
     })
     */
+    window.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+
+    window.addEventListener("touchstart", onTouchStart);
+    window.addEventListener("touchmove", onTouchMove);
+    window.addEventListener("touchend", onTouchEnd);
     
     window.addEventListener("keydown", function(event) {
         if (getKeyCode(event) == 'w') isWalkingForward = true;
@@ -51,11 +100,6 @@ function setupControls() {
         if (getKeyCode(event) == 'd') isWalkingRight = true;
         if (getKeyCode(event) == 'q') isFlyingDown = true;
         if (getKeyCode(event) == 'e') isFlyingUp = true;
-
-        if (getKeyCode(event) == 'o') armSaveJson = true;
-        if (getKeyCode(event) == 'j') armFrameBack = true;
-        if (getKeyCode(event) == 'p') armTogglePause = true;
-        if (getKeyCode(event) == 'l') armFrameForward = true;        
     });
 
     window.addEventListener("keyup", function(event) {
