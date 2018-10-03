@@ -127,8 +127,8 @@ function setupPlayer() {
 }
 
 var tmpQuaternion = new THREE.Quaternion();
-var moveVector = new THREE.Vector3( 0, 0, 0 );
-var rotationVector = new THREE.Vector3( 0, 0, 0 );
+var moveVector = new THREE.Vector3(0, 0, 0);
+var rotationVector = new THREE.Vector3(0, 0, 0);
 
 function updatePlayer() {
     /*
@@ -141,7 +141,7 @@ function updatePlayer() {
 
     var cameraPos = camera.position.clone();
     var targetPos = cameraPos.clone();
-    var aimPos = cameraGaze.getWorldPosition();
+    var aimPos = cameraGaze.getWorldPosition(new THREE.Vector3());
 
     if ((isWalkingForward || isWalkingBackward || isWalkingLeft || isWalkingRight || isFlyingUp || isFlyingDown) && movingSpeed < movingSpeedMax) {
         if (movingSpeed < movingSpeedMax) {
