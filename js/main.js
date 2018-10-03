@@ -14,7 +14,6 @@ function setup() {
 function animate() {
     window.requestAnimationFrame(animate);
     updatePlayer();
-    controls.update();
     renderer.render(scene, camera);
 }
 

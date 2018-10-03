@@ -193,6 +193,8 @@ function updatePlayer() {
         if (camera.position.y < floor) camera.position.y = floor;
     }
     */
+
+    controls.update(); // must be last
 }
 
 function spriteAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDuration) {          
