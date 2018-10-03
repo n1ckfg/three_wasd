@@ -70,15 +70,6 @@ function onWindowResize() {
 }
 
 function setupControls() {
-    /*
-    window.addEventListener("touchstart", function(event) {
-        isWalkingForward = true;
-    });
-
-    window.addEventListener("touchend", function(event) {
-        isWalkingForward = false;
-    })
-    */
     window.addEventListener("mousedown", onMouseDown);
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
@@ -113,30 +104,10 @@ function getKeyCode(event) {
 }
 
 function setupPlayer() {
-    cameraGaze = new THREE.Object3D();
-    cameraGaze.position.set(0, 0.1, -60);
-    camera.add(cameraGaze);
-
     setupControls();
 }
 
-var tmpQuaternion = new THREE.Quaternion();
-var moveVector = new THREE.Vector3(0, 0, 0);
-var rotationVector = new THREE.Vector3(0, 0, 0);
-
 function updatePlayer() {
-    /*
-    if (camera.rotation.x > flyingThreshold) {
-        flyingAllowed = true;
-    } else {
-        flyingAllowed = false;
-    }
-    */
-
-    var cameraPos = camera.position.clone();
-    var targetPos = cameraPos.clone();
-    var aimPos = cameraGaze.getWorldPosition(new THREE.Vector3());
-
     if ((isWalkingForward || isWalkingBackward || isWalkingLeft || isWalkingRight || isFlyingUp || isFlyingDown) && movingSpeed < movingSpeedMax) {
         if (movingSpeed < movingSpeedMax) {
             movingSpeed += movingDelta;
@@ -175,20 +146,9 @@ function updatePlayer() {
     	if (isFlyingDown) {
             camera.translateY(-movingSpeed);
     	}
-
-        //camera.position.set(targetPos.x, targetPos.y, targetPos.z);
-        camera.updateMatrixWorld();
-        camera.lookAt(aimPos);
     }
 
-    /*
-    if (!isWalkingForward && camera.position.y > floor) {
-        camera.position.y -= gravity;
-        if (camera.position.y < floor) camera.position.y = floor;
-    }
-    */
-
-    controls.update(); // must be last
+    //controls.update(); // must be last
 }
 
 function spriteAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDuration) {          
