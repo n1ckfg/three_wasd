@@ -20,12 +20,6 @@ var movingDelta = 0.002;
 var floor = 0;
 var gravity = 0.01;
 var cameraGaze;
-var room;
-
-var armSaveJson = false;
-var armFrameForward = false;
-var armFrameBack = false;
-var armTogglePause = false;
 
 function init() {
     renderer = new THREE.WebGLRenderer({ antialias: true });
