@@ -1,7 +1,6 @@
 "use strict";
 
 var renderer, scene, camera, controls, effect, clock, light;
-var boxWidth, params, manager, lastRender;
 
 var sprites = [];
 var colliders = [];
@@ -28,49 +27,10 @@ var armFrameForward = false;
 var armFrameBack = false;
 var armTogglePause = false;
 
-function init() {
-    renderer = new THREE.WebGLRenderer({antialias: false});
-    renderer.setPixelRatio(window.devicePixelRatio);
-
-    document.body.appendChild(renderer.domElement);
-
-    scene = new THREE.Scene();
-
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
-
-    room = new THREE.Mesh(
-        new THREE.BoxGeometry(6, 6, 6, 10, 10, 10),
-        new THREE.MeshBasicMaterial({ color: 0x202020, wireframe: true })
-    );
-    room.position.y = 0;//3;
-    scene.add(room);
-    
-    controls = new THREE.VRControls(camera);
-    effect = new THREE.VREffect(renderer);
-    effect.setSize(window.innerWidth, window.innerHeight);
-
-    clock = new THREE.Clock;
-
-    params = {
-        hideButton: false,
-        isUndistorted: false
-    };
-
-    manager = new WebVRManager(renderer, effect, params);
-
-    lastRender = 0;
-
-    setupPlayer();
-}
-
-function render(timestamp) {
-    var delta = Math.min(timestamp - lastRender, 500);
-    lastRender = timestamp;
-
-    updatePlayer();
-
-    controls.update();
-    manager.render(scene, camera, timestamp);
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 function setupControls() {
