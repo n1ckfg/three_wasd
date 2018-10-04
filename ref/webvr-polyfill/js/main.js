@@ -158,6 +158,7 @@ function main() {
           //effect.setSize(canvas.clientWidth, canvas.clientHeight, false);
           camera.aspect = window.innerWidth / window.innerHeight;
           camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
         }, 250);
       }
     }
