@@ -41,7 +41,7 @@ function init() {
 
     if (isMobile) {
         deviceOrientationControls = new THREE.DeviceOrientationControls(camera);
-        orbitControls = new THREE.OrbitControls(camera);
+        //orbitControls = new THREE.OrbitControls(camera);
     }
 
     clock = new THREE.Clock;
@@ -160,7 +160,7 @@ function updatePlayer() {
 
     if (isMobile) {
         deviceOrientationControls.update(); // must be last
-        orbitControls.update();
+        //orbitControls.update();
     }
 }
 
