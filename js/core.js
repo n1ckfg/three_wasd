@@ -32,7 +32,7 @@ function init() {
 
     scene = new THREE.Scene();
 
-    controls = new THREE.DeviceOrientationControls(camera);
+    controls = new THREE.VRControls(camera);
 
     clock = new THREE.Clock;
 
@@ -148,7 +148,7 @@ function updatePlayer() {
     	}
     }
 
-    //controls.update(); // must be last
+    controls.update(); // must be last
 }
 
 function spriteAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDuration) {          
