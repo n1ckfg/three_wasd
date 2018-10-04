@@ -1,6 +1,6 @@
 "use strict";
 
-var renderer, scene, camera, controls, effect, clock, light;
+var renderer, scene, camera, deviceOrientationControls, orbitControls, effect, clock, light;
 
 var sprites = [];
 var colliders = [];
@@ -39,7 +39,10 @@ function init() {
 
     scene = new THREE.Scene();
 
-    controls = new THREE.DeviceOrientationControls(camera);
+    if (isMobile) {
+        deviceOrientationControls = new THREE.DeviceOrientationControls(camera);
+        orbitControls = new THREE.OrbitControls(camera);
+    }
 
     clock = new THREE.Clock;
 
@@ -155,7 +158,10 @@ function updatePlayer() {
     	}
     }
 
-    if (isMobile) controls.update(); // must be last
+    if (isMobile) {
+        deviceOrientationControls.update(); // must be last
+        orbitControls.update();
+    }
 }
 
 function spriteAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDuration) {          
