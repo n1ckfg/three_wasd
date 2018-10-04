@@ -93,23 +93,21 @@ function main() {
 
     // The polyfill provides this in the event this browser
     // does not support WebVR 1.1
-    /*
     navigator.getVRDisplays().then(function (vrDisplays) {
       // If we have a native display, or we have a CardboardVRDisplay
       // from the polyfill, use it
       if (vrDisplays.length) {
-        vrDisplay = vrDisplays[0];
+        //vrDisplay = vrDisplays[0];
 
         // Apply VR headset positional data to camera.
         controls = new THREE.VRControls(camera);
 
         // Kick off the render loop.
-        vrDisplay.requestAnimationFrame(animate);
+        //vrDisplay.requestAnimationFrame(animate);
       }
       // Otherwise, we're on a desktop environment with no native
       // displays, so provide controls for a monoscopic desktop view
       else {
-        */
         controls = new THREE.OrbitControls(camera);
         controls.target.set(0, 0, -1);
 
@@ -118,9 +116,10 @@ function main() {
         //enterVRButton.disabled = true;
 
         // Kick off the render loop.
+      }
+    });
+
         requestAnimationFrame(animate);
-      //}
-    //});
 
     // Request animation frame loop function
     var lastRender = 0;
@@ -155,9 +154,9 @@ function main() {
       if (!onResize.resizeDelay) {
         onResize.resizeDelay = setTimeout(function () {
           onResize.resizeDelay = null;
-          console.log('Resizing to %s x %s.', canvas.clientWidth, canvas.clientHeight);
+          console.log('Resizing to %s x %s.', window.innerWidth, window.innerHeight);
           //effect.setSize(canvas.clientWidth, canvas.clientHeight, false);
-          camera.aspect = canvas.clientWidth / canvas.clientHeight;
+          camera.aspect = window.innerWidth / window.innerHeight;
           camera.updateProjectionMatrix();
         }, 250);
       }
@@ -181,7 +180,7 @@ function main() {
 
     // Button click handlers.
     document.querySelector('button#fullscreen').addEventListener('click', function() {
-      enterFullscreen(renderer.domElement);
+      enterFullscreen(canvas);
     });
     //document.querySelector('button#vr').addEventListener('click', function() {
       //vrDisplay.requestPresent([{source: renderer.domElement}]);
