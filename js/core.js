@@ -209,7 +209,7 @@ function updatePlayer() {
     	}
     }
 
-    if (isMobile) controls.update(); // must be last
+    controls.update(); // must be last
 }
 
 function spriteAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDuration) {          
