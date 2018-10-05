@@ -61,6 +61,9 @@ function init() {
     window.addEventListener('resize', onResize, false);
 
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+    //cameraGaze = new THREE.Object3D();
+    //cameraGaze.position.set(0, 0.1, -60);
+    //camera.add(cameraGaze);
 
     scene = new THREE.Scene();
 
@@ -127,17 +130,16 @@ function setupControls() {
         controls = new THREE.VRControls(camera);
       } else {
         controls = new THREE.OrbitControls(camera);
-        controls.target.set(0, 0, -1);
       }
     });
 
-    window.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    //window.addEventListener("mousedown", onMouseDown);
+    //window.addEventListener("mousemove", onMouseMove);
+    //window.addEventListener("mouseup", onMouseUp);
 
-    window.addEventListener("touchstart", onTouchStart);
-    window.addEventListener("touchmove", onTouchMove);
-    window.addEventListener("touchend", onTouchEnd);
+    //window.addEventListener("touchstart", onTouchStart);
+    //window.addEventListener("touchmove", onTouchMove);
+    //window.addEventListener("touchend", onTouchEnd);
     
     window.addEventListener("keydown", function(event) {
         if (getKeyCode(event) == 'w') isWalkingForward = true;
@@ -209,7 +211,10 @@ function updatePlayer() {
     	}
     }
 
-    controls.update(); // must be last
+    //camera.updateMatrixWorld();
+    //camera.lookAt(cameraGaze.getWorldPosition(new THREE.Vector3()));
+
+    //controls.update(); // must be last
 }
 
 function spriteAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDuration) {          
