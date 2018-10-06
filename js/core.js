@@ -102,11 +102,13 @@ function setupWebVrPolyfill() {
 }
 
 function setupPlayer() {
+    setupKeyControls();
     setupMouseControls();
-    //setupKeyControls();
 }
 
 function setupPointerLock() {
+    scene.add(controls.getObject());
+
     var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
 
     if (havePointerLock) {
@@ -257,7 +259,7 @@ function updatePlayer() {
     	}
     }
 
-    //camera.updateMatrixWorld();
+    camera.updateMatrixWorld();
     //camera.lookAt(cameraGaze.getWorldPosition(new THREE.Vector3()));
 
     //controls.update(); // must be last
