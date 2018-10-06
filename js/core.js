@@ -23,6 +23,53 @@ var cameraGaze;
 var isMobile = false;
 
 function init() {
+    setupWebVrPolyfill();
+    setupPlayer();
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    canvas = renderer.domElement;
+    document.body.appendChild(canvas);
+    window.addEventListener('resize', onResize, false);
+
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+    //cameraGaze = new THREE.Object3D();
+    //cameraGaze.position.set(0, 0.1, -60);
+    //camera.add(cameraGaze);
+
+    scene = new THREE.Scene();
+
+    clock = new THREE.Clock;
+}
+
+/*
+function onMouseDown() {
+    //
+}
+
+function onMouseMove() {
+    //
+}
+
+function onMouseUp() {
+    //
+}
+
+function onTouchStart() {
+    //
+}
+
+function onTouchMove() {
+    //
+}
+
+function onTouchEnd() {
+    //
+}
+*/
+
+function setupWebVrPolyfill() {
     // Get config from URL
     var config = (function() {
       var config = {};
@@ -52,48 +99,48 @@ function init() {
     //document.querySelector('button#fullscreen').addEventListener('click', function() {
       //enterFullscreen(canvas);
     //});
-
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    canvas = renderer.domElement;
-    document.body.appendChild(canvas);
-    window.addEventListener('resize', onResize, false);
-
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
-    //cameraGaze = new THREE.Object3D();
-    //cameraGaze.position.set(0, 0.1, -60);
-    //camera.add(cameraGaze);
-
-    scene = new THREE.Scene();
-
-    clock = new THREE.Clock;
-
-    setupPlayer();
 }
 
-function onMouseDown() {
-    //
+function setupPlayer() {
+    setupMouseControls();
+    //setupKeyControls();
 }
 
-function onMouseMove() {
-    //
-}
+function setupPointerLock() {
+    var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
 
-function onMouseUp() {
-    //
-}
+    if (havePointerLock) {
+        var element = document.body;
 
-function onTouchStart() {
-    //
-}
+        var pointerlockchange = function(event) {
+            if ( document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element ) {
+                controls.enabled = true;
+            } else {
+                controls.enabled = false;
+            }
+        }
 
-function onTouchMove() {
-    //
-}
+        var pointerlockerror = function(event) {
+            console.log("Pointer lock error");
+        }
 
-function onTouchEnd() {
-    //
+        // Hook pointer lock state change events
+        document.addEventListener( 'pointerlockchange', pointerlockchange, false );
+        document.addEventListener( 'mozpointerlockchange', pointerlockchange, false );
+        document.addEventListener( 'webkitpointerlockchange', pointerlockchange, false );
+
+        document.addEventListener( 'pointerlockerror', pointerlockerror, false );
+        document.addEventListener( 'mozpointerlockerror', pointerlockerror, false );
+        document.addEventListener( 'webkitpointerlockerror', pointerlockerror, false );
+
+        document.addEventListener( 'click', function(event) {
+            // Ask the browser to lock the pointer
+            element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
+            element.requestPointerLock();
+        }, false);
+    } else {
+        console.log('Your browser doesn\'t seem to support the Pointer Lock API');
+    }
 }
 
 function onResize() {
@@ -124,15 +171,18 @@ function enterFullscreen (el) {
   }
 }
 
-function setupControls() {
+function setupMouseControls() {
     navigator.getVRDisplays().then(function (vrDisplays) {
       if (vrDisplays.length) {
         controls = new THREE.VRControls(camera);
       } else {
-        controls = new THREE.OrbitControls(camera);
+        controls = new THREE.PointerLockControls(camera);
+        setupPointerLock();
       }
     });
+}
 
+function setupKeyControls() {
     //window.addEventListener("mousedown", onMouseDown);
     //window.addEventListener("mousemove", onMouseMove);
     //window.addEventListener("mouseup", onMouseUp);
@@ -164,10 +214,6 @@ function getKeyCode(event) {
     var k = event.charCode || event.keyCode;
     var c = String.fromCharCode(k).toLowerCase();
     return c;
-}
-
-function setupPlayer() {
-    setupControls();
 }
 
 function updatePlayer() {
