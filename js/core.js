@@ -2,72 +2,28 @@
 
 var canvas, renderer, scene, camera, controls, effect, clock, light;
 
-var sprites = [];
-var colliders = [];
-
-var isWalkingForward = false;
-var isWalkingBackward = false;
-var isWalkingLeft = false;
-var isWalkingRight = false;
-var isFlyingUp = false;
-var isFlyingDown = false;
-
-var flyingAllowed = true;
-var flyingThreshold = 0.15;
-var movingSpeed = 0;
-var movingSpeedMax = 0.04;
-var movingDelta = 0.002;
-var floor = 0;
-var gravity = 0.01;
-var cameraGaze;
-var isMobile = false;
-
 function init() {
     setupWebVrPolyfill();
-    setupPlayer();
 
+    setupRenderer();
+
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+
+    scene = new THREE.Scene();
+
+    clock = new THREE.Clock;
+
+    setupPlayer();
+}
+
+function setupRenderer() {
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     canvas = renderer.domElement;
     document.body.appendChild(canvas);
     window.addEventListener('resize', onResize, false);
-
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
-    //cameraGaze = new THREE.Object3D();
-    //cameraGaze.position.set(0, 0.1, -60);
-    //camera.add(cameraGaze);
-
-    scene = new THREE.Scene();
-
-    clock = new THREE.Clock;
 }
-
-/*
-function onMouseDown() {
-    //
-}
-
-function onMouseMove() {
-    //
-}
-
-function onMouseUp() {
-    //
-}
-
-function onTouchStart() {
-    //
-}
-
-function onTouchMove() {
-    //
-}
-
-function onTouchEnd() {
-    //
-}
-*/
 
 function setupWebVrPolyfill() {
     // Get config from URL
@@ -102,47 +58,11 @@ function setupWebVrPolyfill() {
 }
 
 function setupPlayer() {
-    setupKeyControls();
-    setupMouseControls();
+    selectControls();
 }
 
-function setupPointerLock() {
-    scene.add(controls.getObject());
-
-    var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
-
-    if (havePointerLock) {
-        var element = document.body;
-
-        var pointerlockchange = function(event) {
-            if ( document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element ) {
-                controls.enabled = true;
-            } else {
-                controls.enabled = false;
-            }
-        }
-
-        var pointerlockerror = function(event) {
-            console.log("Pointer lock error");
-        }
-
-        // Hook pointer lock state change events
-        document.addEventListener( 'pointerlockchange', pointerlockchange, false );
-        document.addEventListener( 'mozpointerlockchange', pointerlockchange, false );
-        document.addEventListener( 'webkitpointerlockchange', pointerlockchange, false );
-
-        document.addEventListener( 'pointerlockerror', pointerlockerror, false );
-        document.addEventListener( 'mozpointerlockerror', pointerlockerror, false );
-        document.addEventListener( 'webkitpointerlockerror', pointerlockerror, false );
-
-        document.addEventListener( 'click', function(event) {
-            // Ask the browser to lock the pointer
-            element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
-            element.requestPointerLock();
-        }, false);
-    } else {
-        console.log('Your browser doesn\'t seem to support the Pointer Lock API');
-    }
+function updatePlayer() {
+    controls.update();
 }
 
 function onResize() {
@@ -173,130 +93,13 @@ function enterFullscreen (el) {
   }
 }
 
-function setupMouseControls() {
-    navigator.getVRDisplays().then(function (vrDisplays) {
-      if (vrDisplays.length) {
-        controls = new THREE.VRControls(camera);
-      } else {
-        controls = new THREE.PointerLockControls(camera);
-        setupPointerLock();
-      }
-    });
+function selectControls() {
+    //navigator.getVRDisplays().then(function (vrDisplays) {
+      //if (vrDisplays.length) {
+        //controls = new THREE.VRControls(camera);
+      //} else {
+        controls = new THREE.WasdControls(camera);
+      //}
+    //});
 }
 
-function setupKeyControls() {
-    //window.addEventListener("mousedown", onMouseDown);
-    //window.addEventListener("mousemove", onMouseMove);
-    //window.addEventListener("mouseup", onMouseUp);
-
-    //window.addEventListener("touchstart", onTouchStart);
-    //window.addEventListener("touchmove", onTouchMove);
-    //window.addEventListener("touchend", onTouchEnd);
-    
-    window.addEventListener("keydown", function(event) {
-        if (getKeyCode(event) == 'w') isWalkingForward = true;
-        if (getKeyCode(event) == 'a') isWalkingLeft = true;
-        if (getKeyCode(event) == 's') isWalkingBackward = true;
-        if (getKeyCode(event) == 'd') isWalkingRight = true;
-        if (getKeyCode(event) == 'q') isFlyingDown = true;
-        if (getKeyCode(event) == 'e') isFlyingUp = true;
-    });
-
-    window.addEventListener("keyup", function(event) {
-        if (getKeyCode(event) == 'w') isWalkingForward = false;
-        if (getKeyCode(event) == 'a') isWalkingLeft = false;
-        if (getKeyCode(event) == 's') isWalkingBackward = false;
-        if (getKeyCode(event) == 'd') isWalkingRight = false;
-        if (getKeyCode(event) == 'q') isFlyingDown = false;
-        if (getKeyCode(event) == 'e') isFlyingUp = false;
-    });
-}
-
-function getKeyCode(event) {
-    var k = event.charCode || event.keyCode;
-    var c = String.fromCharCode(k).toLowerCase();
-    return c;
-}
-
-function updatePlayer() {
-    if ((isWalkingForward || isWalkingBackward || isWalkingLeft || isWalkingRight || isFlyingUp || isFlyingDown) && movingSpeed < movingSpeedMax) {
-        if (movingSpeed < movingSpeedMax) {
-            movingSpeed += movingDelta;
-        } else if (movingSpeed > movingSpeedMax) {
-            movingSpeed = movingSpeedMax;
-        }
-    } else {
-        if (movingSpeed > 0) {
-            movingSpeed -= movingDelta;
-        } else if (movingSpeed < 0) {
-            movingSpeed = 0;
-        }
-    }
-
-    if (movingSpeed > 0) {
-    	if (isWalkingForward) {
-            camera.translateZ(-movingSpeed);
-    	}
-
-    	if (isWalkingBackward) {
-            camera.translateZ(movingSpeed);		
-    	} 
-
-    	if (isWalkingLeft) {
-    		camera.translateX(-movingSpeed);
-    	}
-
-    	if (isWalkingRight) {
-            camera.translateX(movingSpeed);
-    	}
-
-    	if (isFlyingUp) {
-            camera.translateY(movingSpeed);
-    	}
-
-    	if (isFlyingDown) {
-            camera.translateY(-movingSpeed);
-    	}
-    }
-
-    camera.updateMatrixWorld();
-    //camera.lookAt(cameraGaze.getWorldPosition(new THREE.Vector3()));
-
-    //controls.update(); // must be last
-}
-
-function spriteAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDuration) {          
-    this.tilesHorizontal = tilesHoriz;
-    this.tilesVertical = tilesVert;
-
-    this.numberOfTiles = numTiles;
-    texture.wrapS = texture.wrapT = THREE.RepeatWrapping; 
-    texture.repeat.set( 1 / this.tilesHorizontal, 1 / this.tilesVertical );
-
-    this.tileDisplayDuration = tileDispDuration;
-
-    this.currentDisplayTime = 0;
-
-    this.currentTile = 0;
-        
-    this.update = function( milliSec ) {
-        this.currentDisplayTime += milliSec;
-        while (this.currentDisplayTime > this.tileDisplayDuration) {
-            this.currentDisplayTime -= this.tileDisplayDuration;
-            this.currentTile++;
-            if (this.currentTile == this.numberOfTiles)
-                this.currentTile = 0;
-            var currentColumn = this.currentTile % this.tilesHorizontal;
-            texture.offset.x = currentColumn / this.tilesHorizontal;
-            var currentRow = Math.floor( this.currentTile / this.tilesHorizontal );
-            texture.offset.y = currentRow / this.tilesVertical;
-        }
-    };
-}
-
-function updateSprites() {
-    var delta = clock.getDelta(); 
-    for (var i=0; i<sprites.length; i++){
-        sprites[i].update(1000 * delta);
-    }
-}
