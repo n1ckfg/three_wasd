@@ -1,6 +1,6 @@
 "use strict";
 
-var room, sky;
+var room, sky, flower, flowerMixer, pointLight;
 
 function setup() {
     init();
@@ -20,12 +20,32 @@ function setup() {
     );
     room.position.y = 0;//3;
     scene.add(room);
+
+    pointLight = new THREE.PointLight(0xffffff, 1, 100);
+    pointLight.position.set(-5, 1, 5);
+    scene.add(pointLight);
+
+    var loader = new THREE.GLTFLoader();
+    loader.load("./models/flower.glb", function(data) {
+        flower = data.scene;
+        scene.add(flower);
+        flower.position.y -= 1;
+        flower.position.x += 1;
+
+        flowerMixer = new THREE.AnimationMixer(flower);
+        for (var i=0; i<data.animations.length; i++) {
+            flowerMixer.clipAction(data.animations[i]).play();
+        }
+    });
 }
 
 function animate() {
     window.requestAnimationFrame(animate);
+
     var delta = clock.getDelta();
     updatePlayer(delta);
+    if (flowerMixer) flowerMixer.update(delta);
+
     renderer.render(scene, camera);
 }
 

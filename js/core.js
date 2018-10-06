@@ -11,7 +11,7 @@ function init() {
 
     scene = new THREE.Scene();
 
-    clock = new THREE.Clock;
+    clock = new THREE.Clock();
 
     setupPlayer();
 }
@@ -62,7 +62,9 @@ function setupPlayer() {
 }
 
 function updatePlayer(delta) {
-    controls.update(delta);
+    try {
+      controls.update(delta);
+    } catch (err) { }
 }
 
 function onResize() {
@@ -99,6 +101,7 @@ function selectControls() {
         controls = new THREE.VRControls(camera);
       } else {
         controls = new THREE.FirstPersonControls(camera);
+        controls.lookSpeed = 0.1;
       }
     });
 }
