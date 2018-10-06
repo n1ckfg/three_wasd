@@ -61,8 +61,8 @@ function setupPlayer() {
     selectControls();
 }
 
-function updatePlayer() {
-    controls.update();
+function updatePlayer(delta) {
+    controls.update(delta);
 }
 
 function onResize() {
@@ -94,12 +94,12 @@ function enterFullscreen (el) {
 }
 
 function selectControls() {
-    //navigator.getVRDisplays().then(function (vrDisplays) {
-      //if (vrDisplays.length) {
-        //controls = new THREE.VRControls(camera);
-      //} else {
-        controls = new THREE.WasdControls(camera);
-      //}
-    //});
+    navigator.getVRDisplays().then(function (vrDisplays) {
+      if (vrDisplays.length) {
+        controls = new THREE.VRControls(camera);
+      } else {
+        controls = new THREE.FirstPersonControls(camera);
+      }
+    });
 }
 

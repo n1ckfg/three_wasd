@@ -24,7 +24,8 @@ function setup() {
 
 function animate() {
     window.requestAnimationFrame(animate);
-    updatePlayer();
+    var delta = clock.getDelta();
+    updatePlayer(delta);
     renderer.render(scene, camera);
 }
 
