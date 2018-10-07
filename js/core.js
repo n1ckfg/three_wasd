@@ -98,13 +98,15 @@ function enterFullscreen (el) {
 
 function selectControls() {
     navigator.getVRDisplays().then(function (vrDisplays) {
-      if (vrDisplays.length) {
-        vrControls = new THREE.VRControls(camera);
-        touchControls = new THREE.TouchControls(camera);
-      } else {
-        wasdControls = new THREE.PointerLockControls(camera); //WasdControls(camera);
-        //wasdControls.lookSpeed = 0.1;
-      }
+        if (vrDisplays.length) {
+            vrControls = new THREE.VRControls(camera);
+            touchControls = new THREE.TouchControls(camera);
+        } else {
+            wasdControls = new THREE.PointerLockControls(camera);
+            scene.add(wasdControls.getObject());
+            //wasdControls = new THREE.WasdControls(camera);
+            //wasdControls.lookSpeed = 0.1;
+        }
     });
 }
 
