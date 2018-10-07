@@ -1,6 +1,7 @@
 "use strict";
 
-var canvas, renderer, scene, camera, controls, effect, clock, light;
+var canvas, renderer, scene, camera, effect, clock, light;
+var vrControls, wasdControls, touchControls;
 
 function init() {
     setupWebVrPolyfill();
@@ -63,7 +64,7 @@ function setupPlayer() {
 
 function updatePlayer(delta) {
     try {
-      controls.update(delta);
+      wasdControls.update(delta);
     } catch (err) { }
 }
 
@@ -98,10 +99,11 @@ function enterFullscreen (el) {
 function selectControls() {
     navigator.getVRDisplays().then(function (vrDisplays) {
       if (vrDisplays.length) {
-        controls = new THREE.VRControls(camera);
+        vrControls = new THREE.VRControls(camera);
+        touchControls = new THREE.TouchControls(camera);
       } else {
-        controls = new THREE.WasdControls(camera);
-        controls.lookSpeed = 0.1;
+        wasdControls = new THREE.PointerLockControls(camera); //WasdControls(camera);
+        //wasdControls.lookSpeed = 0.1;
       }
     });
 }
