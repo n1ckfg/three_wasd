@@ -52,9 +52,9 @@ function setupWebVrPolyfill() {
 
     console.log("Using webvr-polyfill version " + WebVRPolyfill.version + " with configuration: " + JSON.stringify(config));
     
-    //document.querySelector('button#fullscreen').addEventListener('click', function() {
-      //enterFullscreen(canvas);
-    //});
+    document.querySelector('button#fullscreen').addEventListener('click', function() {
+        enterFullscreen(canvas);
+    });
 }
 
 function setupPlayer() {
@@ -100,7 +100,7 @@ function selectControls() {
       if (vrDisplays.length) {
         controls = new THREE.VRControls(camera);
       } else {
-        controls = new THREE.FirstPersonControls(camera);
+        controls = new THREE.WasdControls(camera);
         controls.lookSpeed = 0.1;
       }
     });

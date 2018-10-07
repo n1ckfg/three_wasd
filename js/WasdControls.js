@@ -1,193 +1,242 @@
 /**
  * @author mrdoob / http://mrdoob.com/
- */
+ * @author alteredq / http://alteredqualia.com/
+ * @author paulirish / http://paulirish.com/
+ * @author n1ckfg / https://fox-gieg.com/
+ **/
 
-THREE.WasdControls = function(camera) {
+THREE.WasdControls = function(object, domElement) {
 
-	var scope = this;
+	this.object = object;
+	this.target = new THREE.Vector3(0, 0, 0);
 
-	this.isWalkingForward = false;
-	this.isWalkingBackward = false;
-	this.isWalkingLeft = false;
-	this.isWalkingRight = false;
-	this.isFlyingUp = false;
-	this.isFlyingDown = false;
+	this.domElement = (domElement !== undefined) ? domElement : document;
 
-	this.flyingAllowed = true;
-	this.flyingThreshold = 0.15;
-	this.movingSpeed = 0;
-	this.movingSpeedMax = 0.04;
-	this.movingDelta = 0.002;
-	this.floor = 0;
-	this.gravity = 0.01;
+	this.enabled = true;
 
-	camera.rotation.set(0, 0, 0);
+	this.movementSpeed = 1.0;
+	this.lookSpeed = 0.005;
 
-	this.pitchObject = new THREE.Object3D();
-	this.pitchObject.add(camera);
+	this.lookVertical = true;
+	this.autoForward = false;
 
-	this.yawObject = new THREE.Object3D();
-	this.yawObject.position.y = 0; //10;
-	this.yawObject.add(this.pitchObject);
+	this.activeLook = true;
 
-	this.PI_2 = Math.PI / 2;
+	this.heightSpeed = false;
+	this.heightCoef = 1.0;
+	this.heightMin = 0.0;
+	this.heightMax = 1.0;
 
-	this.enabled = false;
+	this.constrainVertical = false;
+	this.verticalMin = 0;
+	this.verticalMax = Math.PI;
 
-	this.update = function() {
-	    if ((this.isWalkingForward || this.isWalkingBackward || this.isWalkingLeft || this.isWalkingRight || this.isFlyingUp || this.isFlyingDown) && this.movingSpeed < this.movingSpeedMax) {
-	        if (this.movingSpeed < this.movingSpeedMax) {
-	            this.movingSpeed += this.movingDelta;
-	        } else if (this.movingSpeed > this.movingSpeedMax) {
-	            this.movingSpeed = this.movingSpeedMax;
-	        }
-	    } else {
-	        if (this.movingSpeed > 0) {
-	            this.movingSpeed -= this.movingDelta;
-	        } else if (this.movingSpeed < 0) {
-	            this.movingSpeed = 0;
-	        }
-	    }
+	this.autoSpeedFactor = 0.0;
 
-	    if (this.movingSpeed > 0) {
-	    	if (this.isWalkingForward) {
-	            camera.translateZ(-this.movingSpeed);
-	    	}
+	this.mouseX = 0;
+	this.mouseY = 0;
 
-	    	if (this.isWalkingBackward) {
-	            camera.translateZ(this.movingSpeed);		
-	    	} 
+	this.lat = 0;
+	this.lon = 0;
+	this.phi = 0;
+	this.theta = 0;
 
-	    	if (this.isWalkingLeft) {
-	    		camera.translateX(-this.movingSpeed);
-	    	}
+	this.moveForward = false;
+	this.moveBackward = false;
+	this.moveLeft = false;
+	this.moveRight = false;
 
-	    	if (this.isWalkingRight) {
-	            camera.translateX(this.movingSpeed);
-	    	}
+	this.mouseDragOn = false;
 
-	    	if (this.isFlyingUp) {
-	            camera.translateY(this.movingSpeed);
-	    	}
+	this.viewHalfX = 0;
+	this.viewHalfY = 0;
 
-	    	if (this.isFlyingDown) {
-	            camera.translateY(-this.movingSpeed);
-	    	}
-	    }
+	if (this.domElement !== document) {
+		this.domElement.setAttribute('tabindex', - 1);
 	}
 
-	this.onMouseMove = function(event) {
-		if (scope.enabled === false) return;
+	//
 
-		var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-		var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-
-		this.yawObject.rotation.y -= movementX * 0.002;
-		this.pitchObject.rotation.x -= movementY * 0.002;
-
-		this.pitchObject.rotation.x = Math.max(- PI_2, Math.min(PI_2, this.pitchObject.rotation.x));
-	}
-
-	this.dispose = function() {
-		document.removeEventListener('mousemove', this.onMouseMove, false);
-	}
-
-	document.addEventListener('mousemove', this.onMouseMove, false);
-
-	this.getObject = function() {
-		return this.yawObject;
-	}
-
-	this.getDirection = function() {
-		// assumes the camera itself is not rotated
-
-		var direction = new THREE.Vector3(0, 0, - 1);
-		var rotation = new THREE.Euler(0, 0, 0, 'YXZ');
-
-		return function(v) {
-			rotation.set(this.pitchObject.rotation.x, this.yawObject.rotation.y, 0);
-
-			v.copy(direction).applyEuler(rotation);
-
-			return v;
+	this.handleResize = function() {
+		if (this.domElement === document) {
+			this.viewHalfX = window.innerWidth / 2;
+			this.viewHalfY = window.innerHeight / 2;
+		} else {
+			this.viewHalfX = this.domElement.offsetWidth / 2;
+			this.viewHalfY = this.domElement.offsetHeight / 2;
 		}
 	}
 
-	this.setupPointerLock = function() {
-	    scene.add(this.getObject());
+	this.onMouseDown = function(event) {
+		if (this.domElement !== document) {
+			this.domElement.focus();
+		}
 
-	    var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
+		event.preventDefault();
+		event.stopPropagation();
 
-	    if (havePointerLock) {
-	        var element = document.body;
+		if (this.activeLook) {
+			switch (event.button) {
+				case 0: this.moveForward = true; break;
+				case 2: this.moveBackward = true; break;
+			}
+		}
 
-	        var pointerlockchange = function(event) {
-	            if ( document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element ) {
-	                this.enabled = true;
-	            } else {
-	                this.enabled = false;
-	            }
-	        }
-
-	        var pointerlockerror = function(event) {
-	            console.log("Pointer lock error");
-	        }
-
-	        // Hook pointer lock state change events
-	        document.addEventListener( 'pointerlockchange', pointerlockchange, false );
-	        document.addEventListener( 'mozpointerlockchange', pointerlockchange, false );
-	        document.addEventListener( 'webkitpointerlockchange', pointerlockchange, false );
-
-	        document.addEventListener( 'pointerlockerror', pointerlockerror, false );
-	        document.addEventListener( 'mozpointerlockerror', pointerlockerror, false );
-	        document.addEventListener( 'webkitpointerlockerror', pointerlockerror, false );
-
-	        document.addEventListener( 'click', function(event) {
-	            // Ask the browser to lock the pointer
-	            element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
-	            element.requestPointerLock();
-	        }, false);
-	    } else {
-	        console.log('Your browser doesn\'t seem to support the Pointer Lock API');
-	    }
+		this.mouseDragOn = true;
 	}
 
-	this.setupPointerLock();
+	this.onMouseUp = function(event) {
+		event.preventDefault();
+		event.stopPropagation();
 
-	this.getKeyCode = function(event) {
-	    var k = event.charCode || event.keyCode;
-	    var c = String.fromCharCode(k).toLowerCase();
-	    return c;
+		if (this.activeLook) {
+			switch (event.button) {
+				case 0: this.moveForward = false; break;
+				case 2: this.moveBackward = false; break;
+			}
+		}
+
+		this.mouseDragOn = false;
 	}
 
-	this.setupKeyControls = function() {
-	    //window.addEventListener("mousedown", onMouseDown);
-	    //window.addEventListener("mousemove", onMouseMove);
-	    //window.addEventListener("mouseup", onMouseUp);
-
-	    //window.addEventListener("touchstart", onTouchStart);
-	    //window.addEventListener("touchmove", onTouchMove);
-	    //window.addEventListener("touchend", onTouchEnd);
-	    
-	    window.addEventListener("keydown", function(event) {
-	        if (this.getKeyCode(event) === 'w') this.isWalkingForward = true;
-	        if (this.getKeyCode(event) === 'a') this.isWalkingLeft = true;
-	        if (this.getKeyCode(event) === 's') this.isWalkingBackward = true;
-	        if (this.getKeyCode(event) === 'd') this.isWalkingRight = true;
-	        if (this.getKeyCode(event) === 'q') this.isFlyingDown = true;
-	        if (this.getKeyCode(event) === 'e') this.isFlyingUp = true;
-	    });
-
-	    window.addEventListener("keyup", function(event) {
-	        if (getKeyCode(event) === 'w') this.isWalkingForward = false;
-	        if (getKeyCode(event) === 'a') this.isWalkingLeft = false;
-	        if (getKeyCode(event) === 's') this.isWalkingBackward = false;
-	        if (getKeyCode(event) === 'd') this.isWalkingRight = false;
-	        if (getKeyCode(event) === 'q') this.isFlyingDown = false;
-	        if (getKeyCode(event) === 'e') this.isFlyingUp = false;
-	    });
+	this.onMouseMove = function(event) {
+		if (this.domElement === document) {
+			this.mouseX = event.pageX - this.viewHalfX;
+			this.mouseY = event.pageY - this.viewHalfY;
+		} else {
+			this.mouseX = event.pageX - this.domElement.offsetLeft - this.viewHalfX;
+			this.mouseY = event.pageY - this.domElement.offsetTop - this.viewHalfY;
+		}
 	}
 
-	this.setupKeyControls();
+	this.onKeyDown = function(event) {
+		switch (event.keyCode) {
+			case 38: /*up*/
+			case 87: /*W*/ this.moveForward = true; break;
+
+			case 37: /*left*/
+			case 65: /*A*/ this.moveLeft = true; break;
+
+			case 40: /*down*/
+			case 83: /*S*/ this.moveBackward = true; break;
+
+			case 39: /*right*/
+			case 68: /*D*/ this.moveRight = true; break;
+
+			case 81: /*Q*/ this.moveDown = true; break;
+			case 69: /*E*/ this.moveUp = true; break;
+		}
+	}
+
+	this.onKeyUp = function(event) {
+		switch (event.keyCode) {
+			case 38: /*up*/
+			case 87: /*W*/ this.moveForward = false; break;
+
+			case 37: /*left*/
+			case 65: /*A*/ this.moveLeft = false; break;
+
+			case 40: /*down*/
+			case 83: /*S*/ this.moveBackward = false; break;
+
+			case 39: /*right*/
+			case 68: /*D*/ this.moveRight = false; break;
+
+			case 81: /*Q*/ this.moveDown = false; break;
+			case 69: /*E*/ this.moveUp = false; break;
+		}
+	}
+
+	this.update = function(delta) {
+		if (this.enabled === false) return;
+
+		if (this.heightSpeed) {
+			var y = THREE.Math.clamp(this.object.position.y, this.heightMin, this.heightMax);
+			var heightDelta = y - this.heightMin;
+			this.autoSpeedFactor = delta * (heightDelta * this.heightCoef);
+		} else {
+			this.autoSpeedFactor = 0.0;
+		}
+
+		var actualMoveSpeed = delta * this.movementSpeed;
+
+		if (this.moveForward || (this.autoForward && ! this.moveBackward)) this.object.translateZ(- (actualMoveSpeed + this.autoSpeedFactor));
+		if (this.moveBackward) this.object.translateZ(actualMoveSpeed);
+
+		if (this.moveLeft) this.object.translateX(- actualMoveSpeed);
+		if (this.moveRight) this.object.translateX(actualMoveSpeed);
+
+		if (this.moveUp) this.object.translateY(actualMoveSpeed);
+		if (this.moveDown) this.object.translateY(- actualMoveSpeed);
+
+		var actualLookSpeed = delta * this.lookSpeed;
+
+		if (!this.activeLook) {
+			actualLookSpeed = 0;
+		}
+
+		var verticalLookRatio = 1;
+
+		if (this.constrainVertical) {
+			verticalLookRatio = Math.PI / (this.verticalMax - this.verticalMin);
+		}
+
+		this.lon += this.mouseX * actualLookSpeed;
+		if (this.lookVertical) this.lat -= this.mouseY * actualLookSpeed * verticalLookRatio;
+
+		this.lat = Math.max(- 85, Math.min(85, this.lat));
+		this.phi = THREE.Math.degToRad(90 - this.lat);
+
+		this.theta = THREE.Math.degToRad(this.lon);
+
+		if (this.constrainVertical) {
+			this.phi = THREE.Math.mapLinear(this.phi, 0, Math.PI, this.verticalMin, this.verticalMax);
+		}
+		
+		var targetPosition = this.target;
+		var position = this.object.position;
+
+		targetPosition.x = position.x + 100 * Math.sin(this.phi) * Math.cos(this.theta);
+		targetPosition.y = position.y + 100 * Math.cos(this.phi);
+		targetPosition.z = position.z + 100 * Math.sin(this.phi) * Math.sin(this.theta);
+
+		this.object.lookAt(targetPosition);
+	}
+
+	function contextmenu(event) {
+		event.preventDefault();
+	}
+
+	this.dispose = function() {
+		this.domElement.removeEventListener('contextmenu', contextmenu, false);
+		this.domElement.removeEventListener('mousedown', _onMouseDown, false);
+		this.domElement.removeEventListener('mousemove', _onMouseMove, false);
+		this.domElement.removeEventListener('mouseup', _onMouseUp, false);
+
+		window.removeEventListener('keydown', _onKeyDown, false);
+		window.removeEventListener('keyup', _onKeyUp, false);
+	}
+
+	var _onMouseMove = bind(this, this.onMouseMove);
+	var _onMouseDown = bind(this, this.onMouseDown);
+	var _onMouseUp = bind(this, this.onMouseUp);
+	var _onKeyDown = bind(this, this.onKeyDown);
+	var _onKeyUp = bind(this, this.onKeyUp);
+
+	this.domElement.addEventListener('contextmenu', contextmenu, false);
+	this.domElement.addEventListener('mousemove', _onMouseMove, false);
+	this.domElement.addEventListener('mousedown', _onMouseDown, false);
+	this.domElement.addEventListener('mouseup', _onMouseUp, false);
+
+	window.addEventListener('keydown', _onKeyDown, false);
+	window.addEventListener('keyup', _onKeyUp, false);
+
+	function bind(scope, fn) {
+		return function() {
+			fn.apply(scope, arguments);
+		}
+	}
+
+	this.handleResize();
 
 }
